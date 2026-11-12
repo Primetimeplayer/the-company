@@ -3,6 +3,7 @@ import type {
   EvidenceDoc,
   PreviousApplication,
   Project,
+  Variation,
 } from "../types";
 import { percentOfPence, sumPence } from "../money";
 
@@ -23,8 +24,15 @@ export function sumVariationsClaimedPence(project: Project): number {
   );
 }
 
-export function approvedVariations(project: Project) {
+export function approvedVariations(project: Project): Variation[] {
   return project.variations.filter((variation) => variation.status === "approved");
+}
+
+/** Variations that are both approved and carry a signature. */
+export function signedApprovedVariations(project: Project): Variation[] {
+  return approvedVariations(project).filter(
+    (variation) => Boolean(variation.signedBy) && Boolean(variation.signedDate),
+  );
 }
 
 export function revisedContractValuePence(project: Project): number {
@@ -34,11 +42,27 @@ export function revisedContractValuePence(project: Project): number {
   );
 }
 
-/** Retention cap in pence, or undefined when the subcontract has no cap. */
+/**
+ * Contract value used for retention: original value plus approved variations
+ * that are actually signed (unsigned variations cannot be paid).
+ */
+export function revisedSignedContractValuePence(project: Project): number {
+  return (
+    project.subcontract.originalValuePence +
+    sumPence(
+      signedApprovedVariations(project).map((variation) => variation.valuePence),
+    )
+  );
+}
+
+/** Retention cap in pence, applied to the revised signed contract value. */
 export function retentionCapPence(project: Project): number | undefined {
-  const { retentionCapPercent, originalValuePence } = project.subcontract;
+  const { retentionCapPercent } = project.subcontract;
   if (retentionCapPercent === undefined) return undefined;
-  return percentOfPence(originalValuePence, retentionCapPercent);
+  return percentOfPence(
+    revisedSignedContractValuePence(project),
+    retentionCapPercent,
+  );
 }
 
 export function expectedRetentionPence(
