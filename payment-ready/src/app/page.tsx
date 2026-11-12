@@ -9,7 +9,9 @@ import {
 } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { FooterDisclaimer } from "@/components/footer-disclaimer";
+import { MobileMenu } from "@/components/mobile-menu";
 import { Button } from "@/components/ui/button";
+import { WALKTHROUGH_URL } from "@/lib/config";
 
 const STEPS = [
   {
@@ -64,12 +66,15 @@ export default function LandingPage() {
               Pricing
             </a>
           </nav>
-          <Button asChild variant="outline" size="sm" className="h-9 px-4">
-            <Link href="/app">
-              Try the demo
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm" className="h-9 px-4">
+              <Link href="/app">
+                Try the demo
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+              </Link>
+            </Button>
+            <MobileMenu />
+          </div>
         </div>
       </header>
 
@@ -113,7 +118,7 @@ export default function LandingPage() {
                 variant="outline"
                 className="w-full sm:w-auto"
               >
-                <a href="#pricing">Book a walkthrough</a>
+                <a href={WALKTHROUGH_URL}>Book a walkthrough</a>
               </Button>
             </div>
 
@@ -178,7 +183,7 @@ export default function LandingPage() {
               </p>
             </div>
             <Button asChild variant="outline" className="shrink-0">
-              <a href="mailto:hello@example.com?subject=Payment%20Ready%20walkthrough">
+              <a href={WALKTHROUGH_URL}>
                 Book a walkthrough
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </a>

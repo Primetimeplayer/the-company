@@ -19,11 +19,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  REPORT_FILTERS,
+  countByFilter,
+  filterCheckResults,
+  sortCheckResults,
+  type ReportFilter,
+} from "@/domain/report";
 import type {
   CheckCategory,
   CheckResult,
   EvidenceDoc,
 } from "@/domain/types";
+import { cn } from "@/lib/utils";
 
 const CATEGORY_LABELS: Record<CheckCategory, string> = {
   money: "Money",
@@ -41,6 +49,7 @@ export function ReadinessReport({
   evidenceDocs: EvidenceDoc[];
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<ReportFilter>("all");
 
   const selected = useMemo(
     () => results.find((result) => result.id === openId) ?? null,
@@ -50,6 +59,12 @@ export function ReadinessReport({
   const docNames = useMemo(
     () => new Map(evidenceDocs.map((doc) => [doc.id, doc.fileName])),
     [evidenceDocs],
+  );
+
+  const sorted = useMemo(() => sortCheckResults(results), [results]);
+  const visible = useMemo(
+    () => filterCheckResults(sorted, filter),
+    [sorted, filter],
   );
 
   return (
@@ -65,30 +80,64 @@ export function ReadinessReport({
           Every check is run against the contract terms and Northgate&apos;s
           requirements. Click a row for expected vs actual.
         </CardDescription>
+
+        <div
+          role="group"
+          aria-label="Filter checks"
+          className="mt-3 flex flex-wrap gap-1.5"
+        >
+          {REPORT_FILTERS.map((option) => {
+            const active = filter === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setFilter(option.value)}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-[11.5px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                  active
+                    ? "border-brand-indigo bg-brand-indigo text-white"
+                    : "border-border bg-white text-slate-600 hover:bg-slate-50",
+                )}
+              >
+                {option.label}
+                <span
+                  className={cn(
+                    "ml-1.5 tabular-nums",
+                    active ? "text-white/70" : "text-slate-400",
+                  )}
+                >
+                  {countByFilter(results, option.value)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </CardHeader>
 
       {/* Desktop table */}
       <div className="hidden border-t border-border md:block">
-        <Table>
+        <Table className="table-fixed">
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead>Check</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Detail</TableHead>
+              <TableHead className="w-[26%] min-w-[200px]">Check</TableHead>
+              <TableHead className="w-[12%]">Category</TableHead>
+              <TableHead className="w-[13%]">Status</TableHead>
+              <TableHead className="w-[44%]">Detail</TableHead>
               <TableHead className="w-10">
                 <span className="sr-only">Open</span>
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {results.map((result) => (
+            {visible.map((result) => (
               <TableRow
                 key={result.id}
                 className="cursor-pointer"
                 onClick={() => setOpenId(result.id)}
               >
-                <TableCell className="max-w-[220px] font-medium text-slate-900">
+                <TableCell className="min-w-[200px] font-medium text-slate-900">
                   {result.title}
                 </TableCell>
                 <TableCell>
@@ -99,7 +148,7 @@ export function ReadinessReport({
                 <TableCell>
                   <StatusChip status={result.status} />
                 </TableCell>
-                <TableCell className="max-w-[440px] text-slate-600">
+                <TableCell className="text-slate-600">
                   <span className="line-clamp-2">{result.message}</span>
                 </TableCell>
                 <TableCell className="pr-3 text-right">
@@ -119,11 +168,16 @@ export function ReadinessReport({
             ))}
           </TableBody>
         </Table>
+        {visible.length === 0 && (
+          <p className="px-4 py-6 text-center text-[12.5px] text-slate-500">
+            No checks in this view.
+          </p>
+        )}
       </div>
 
       {/* Mobile list */}
       <ul className="divide-y divide-border border-t border-border md:hidden">
-        {results.map((result) => (
+        {visible.map((result) => (
           <li key={result.id}>
             <button
               type="button"
@@ -145,6 +199,11 @@ export function ReadinessReport({
             </button>
           </li>
         ))}
+        {visible.length === 0 && (
+          <li className="px-4 py-6 text-center text-[12.5px] text-slate-500">
+            No checks in this view.
+          </li>
+        )}
       </ul>
 
       <Sheet

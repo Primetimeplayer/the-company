@@ -5,7 +5,11 @@ import { FileCheck2, UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export function UploadDropzone() {
+export function UploadDropzone({
+  onSampleLoaded,
+}: {
+  onSampleLoaded?: () => void;
+} = {}) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [files, setFiles] = useState<string[]>([]);
@@ -77,6 +81,7 @@ export function UploadDropzone() {
             onClick={() => {
               setFiles([]);
               setSampleLoaded(true);
+              onSampleLoaded?.();
             }}
           >
             <FileCheck2 className="h-4 w-4" aria-hidden />

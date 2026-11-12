@@ -29,12 +29,12 @@ export function KeyDatesPanel({
       label: "Application submitted",
       date: formatDate(submissionDate),
       meta: keyDates.submissionIsLate
-        ? `Scheduled ${formatDate(keyDates.scheduledApplicationDate)} — ${keyDates.daysLate} day${keyDates.daysLate === 1 ? "" : "s"} late`
+        ? `Contractual application date ${formatDate(keyDates.scheduledApplicationDate)} — ${keyDates.daysLate} day${keyDates.daysLate === 1 ? "" : "s"} late`
         : "On the contractual application date",
       tone: keyDates.submissionIsLate ? "warning" : "pass",
     },
     {
-      label: "Due date",
+      label: "Contractual due date",
       date: formatDate(keyDates.dueDate),
       meta:
         daysUntilDue >= 0
@@ -70,7 +70,7 @@ export function KeyDatesPanel({
           Key dates
         </CardTitle>
         <CardDescription>
-          Derived from the subcontract terms and the submission date.
+          Contractual dates from the subcontract terms and the application date.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -125,11 +125,18 @@ export function KeyDatesPanel({
           </div>
         )}
 
-        <div className="mt-5 rounded-lg bg-indigo-50/70 p-3">
+        <p className="mt-5 rounded-lg bg-slate-50 p-3 text-[11px] leading-relaxed text-slate-500">
+          These dates are contractual and run from the application date in the
+          subcontract. A late application may move them — confirm the timetable
+          with {""}
+          the main contractor.
+        </p>
+
+        <div className="mt-4 rounded-lg bg-indigo-50/70 p-3">
           <p className="text-[12px] font-semibold text-brand-indigo">
             {daysUntilDue >= 0
-              ? `${daysUntilDue} day${daysUntilDue === 1 ? "" : "s"} until the due date`
-              : `${Math.abs(daysUntilDue)} day${Math.abs(daysUntilDue) === 1 ? "" : "s"} past the due date`}
+              ? `${daysUntilDue} day${daysUntilDue === 1 ? "" : "s"} until the contractual due date`
+              : `${Math.abs(daysUntilDue)} day${Math.abs(daysUntilDue) === 1 ? "" : "s"} past the contractual due date`}
           </p>
           <p className="mt-0.5 text-[11.5px] text-slate-600">
             Due {formatDate(keyDates.dueDate)}

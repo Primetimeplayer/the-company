@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import { AppSidebar, MobileNav, type Counts } from "@/components/app/app-sidebar";
-import { KeyDatesPanel } from "@/components/app/key-dates-panel";
-import { ReadinessReport } from "@/components/app/readiness-report";
-import { StatCards } from "@/components/app/stat-cards";
-import { SummaryCard } from "@/components/app/summary-card";
-import { UploadDropzone } from "@/components/app/upload-dropzone";
+import { DashboardView } from "@/components/app/dashboard-view";
 import { FooterDisclaimer } from "@/components/footer-disclaimer";
 import { runAllChecks } from "@/domain/checks";
 import { buildSummary } from "@/domain/summary";
@@ -65,35 +61,19 @@ export default function DashboardPage() {
               </div>
             </header>
 
-            <div className="mt-5">
-              <UploadDropzone />
-            </div>
-
-            <StatCards
+            <DashboardView
               score={run.score}
               issues={counts.fail}
               missing={counts.missing}
               daysUntilDue={run.keyDates.daysUntilDueDate}
-              dueDateLabel={`Due ${formatDate(run.keyDates.dueDate)}`}
+              dueDateLabel={`Contractual due date ${formatDate(run.keyDates.dueDate)}`}
+              summary={summary}
+              results={run.results}
+              evidenceDocs={project.evidenceDocs}
+              keyDates={run.keyDates}
+              paymentTerms={project.subcontract.paymentTerms}
+              submissionDate={project.currentApplication.submissionDate}
             />
-
-            <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-              <div className="min-w-0 space-y-5">
-                <SummaryCard summary={summary} />
-                <ReadinessReport
-                  results={run.results}
-                  evidenceDocs={project.evidenceDocs}
-                />
-              </div>
-
-              <div className="min-w-0" id="key-dates">
-                <KeyDatesPanel
-                  keyDates={run.keyDates}
-                  paymentTerms={project.subcontract.paymentTerms}
-                  submissionDate={project.currentApplication.submissionDate}
-                />
-              </div>
-            </div>
           </main>
 
           <FooterDisclaimer />

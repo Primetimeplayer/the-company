@@ -17,6 +17,8 @@ export function StatCards({
   daysUntilDue,
   dueDateLabel,
 }: StatCardsProps) {
+  const overdue = daysUntilDue < 0;
+
   const cards = [
     {
       label: "Checks passed",
@@ -40,8 +42,8 @@ export function StatCards({
       tile: "bg-[#EDE9FE] text-[#5B21B6]",
     },
     {
-      label: "Days until due date",
-      value: String(Math.max(daysUntilDue, 0)),
+      label: overdue ? "Days past due date" : "Days until due date",
+      value: String(Math.abs(daysUntilDue)),
       hint: dueDateLabel,
       Icon: CalendarClock,
       tile: "bg-[#FEF3C7] text-[#92400E]",
