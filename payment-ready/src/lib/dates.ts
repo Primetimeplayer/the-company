@@ -3,6 +3,7 @@ import {
   addMonths,
   differenceInCalendarDays,
   format,
+  getDaysInMonth,
   parseISO,
   setDate,
 } from "date-fns";
@@ -30,10 +31,28 @@ export function daysBetweenISO(
   return differenceInCalendarDays(parseISO(toISO), parseISO(fromISO));
 }
 
-/** The contractual application date for a period, e.g. the 25th. */
+/**
+ * The contractual application date for a period: the first occurrence of
+ * `applicationDayOfMonth` on or after the period end.
+ *
+ * The day is clamped to the last day of the month, so day 31 in February gives
+ * 28/29 February and never rolls into March.
+ */
 export function applicationDateForPeriod(
   periodEndISO: ISODateString,
-  dayOfMonth: number,
+  applicationDayOfMonth: number,
 ): ISODateString {
-  return format(setDate(parseISO(periodEndISO), dayOfMonth), "yyyy-MM-dd");
+  const periodEnd = parseISO(periodEndISO);
+
+  if (periodEnd.getDate() <= applicationDayOfMonth) {
+    const clampedDay = Math.min(
+      applicationDayOfMonth,
+      getDaysInMonth(periodEnd),
+    );
+    return format(setDate(periodEnd, clampedDay), "yyyy-MM-dd");
+  }
+
+  const nextMonth = addMonths(periodEnd, 1);
+  const clampedDay = Math.min(applicationDayOfMonth, getDaysInMonth(nextMonth));
+  return format(setDate(nextMonth, clampedDay), "yyyy-MM-dd");
 }

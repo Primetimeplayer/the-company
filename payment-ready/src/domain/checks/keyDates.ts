@@ -1,6 +1,9 @@
 import { addDaysISO, addMonthsISO, applicationDateForPeriod, daysBetweenISO, formatDate } from "@/lib/dates";
 import type { CheckResult, KeyDates, Project } from "../types";
-import { expectedRetentionPence, revisedContractValuePence } from "./shared";
+import {
+  expectedRetentionPence,
+  revisedSignedContractValuePence,
+} from "./shared";
 
 export interface KeyDatesCheck {
   results: CheckResult[];
@@ -8,8 +11,12 @@ export interface KeyDatesCheck {
 }
 
 /**
- * Rule 10: derive the payment timetable from the contract terms and the
- * submission date, and warn when the application went in late.
+ * Rule 10: derive the contractual payment timetable from the contract terms and
+ * the contractual application date, then warn if the application went in late.
+ *
+ * The timetable runs from the date the application was contractually due, not
+ * from the day it was actually submitted, so a late application does not quietly
+ * move the client's deadlines.
  */
 export function keyDates(project: Project): KeyDatesCheck {
   const { paymentTerms, practicalCompletionDate, defectsPeriodMonths } =
@@ -21,7 +28,7 @@ export function keyDates(project: Project): KeyDatesCheck {
     paymentTerms.applicationDayOfMonth,
   );
   const dueDate = addDaysISO(
-    application.submissionDate,
+    scheduledApplicationDate,
     paymentTerms.dueDateDaysAfterApplication,
   );
   const paymentNoticeBy = addDaysISO(
@@ -39,7 +46,7 @@ export function keyDates(project: Project): KeyDatesCheck {
 
   const retentionTotalPence = expectedRetentionPence(
     project,
-    revisedContractValuePence(project),
+    revisedSignedContractValuePence(project),
   );
   const firstReleasePence = Math.round(retentionTotalPence / 2);
   const secondReleasePence = retentionTotalPence - firstReleasePence;
@@ -80,11 +87,12 @@ export function keyDates(project: Project): KeyDatesCheck {
   const results: CheckResult[] = [
     {
       id: "key-dates",
-      title: "Payment timetable",
+      title: "Contractual payment timetable",
       category: "deadlines",
       status: "pass",
-      message: `Application #${application.number} is due for payment on ${formatDate(dueDate)}. Payment notice expected by ${formatDate(paymentNoticeBy)}, pay-less notice no later than ${formatDate(payLessNoticeBy)}, final date for payment ${formatDate(finalDateForPayment)}.`,
-      expected: `Application date ${formatDate(scheduledApplicationDate)}`,
+      informational: true,
+      message: `Contractual application date ${formatDate(scheduledApplicationDate)}. Sum due ${formatDate(dueDate)}, payment notice expected by ${formatDate(paymentNoticeBy)}, pay-less notice no later than ${formatDate(payLessNoticeBy)}, final date for payment ${formatDate(finalDateForPayment)}.`,
+      expected: `Contractual application date ${formatDate(scheduledApplicationDate)}`,
       actual: `Submitted ${formatDate(application.submissionDate)}`,
       sourceDocIds: ["ev-subcontract"],
     },
@@ -96,7 +104,7 @@ export function keyDates(project: Project): KeyDatesCheck {
       title: "Late application",
       category: "deadlines",
       status: "warning",
-      message: `Submitted on ${formatDate(application.submissionDate)}, ${daysLate} day${daysLate === 1 ? "" : "s"} after the contractual application date of ${formatDate(scheduledApplicationDate)}. A late application can delay the payment notice and push back the final date for payment.`,
+      message: `Submitted on ${formatDate(application.submissionDate)}, ${daysLate} day${daysLate === 1 ? "" : "s"} after the contractual application date of ${formatDate(scheduledApplicationDate)}. A late application may move these dates and delay the payment notice, so confirm the timetable with ${project.subcontract.mainContractor}.`,
       expected: `On or before ${formatDate(scheduledApplicationDate)}`,
       actual: `${formatDate(application.submissionDate)} (${daysLate} day${daysLate === 1 ? "" : "s"} late)`,
       sourceDocIds: ["ev-subcontract"],
