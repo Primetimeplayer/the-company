@@ -57,6 +57,29 @@ describe("lineItemMaths", () => {
     expect(resultFor(project, "L1").status).toBe("pass");
   });
 
+  it("fails a line with percent complete above 100", () => {
+    const project = clone(sampleProject);
+    const item = project.currentApplication.lineItems[1];
+    if (!item) throw new Error("missing line item");
+    item.percentComplete = 120;
+
+    const result = resultFor(project, "L2");
+    expect(result.status).toBe("fail");
+    expect(result.expected).toBe("0% to 100% complete");
+    expect(result.actual).toBe("120% complete");
+  });
+
+  it("fails a line with a negative percent complete", () => {
+    const project = clone(sampleProject);
+    const item = project.currentApplication.lineItems[3];
+    if (!item) throw new Error("missing line item");
+    item.percentComplete = -5;
+
+    const result = resultFor(project, "L4");
+    expect(result.status).toBe("fail");
+    expect(result.actual).toBe("-5% complete");
+  });
+
   it("returns one result per line item", () => {
     expect(lineItemMaths(sampleProject)).toHaveLength(
       sampleProject.currentApplication.lineItems.length,

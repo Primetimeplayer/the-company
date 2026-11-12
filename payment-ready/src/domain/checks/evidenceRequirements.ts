@@ -53,54 +53,48 @@ export function evidenceRequirements(project: Project): CheckResult[] {
       }
 
       case "signed_variations_only": {
-        const problems = application.variationsClaimed.flatMap((claim) => {
+        // The per-variation checks (variation-claim:*) already report each
+        // unsigned, pending or unregistered claim. This row is a client-rule
+        // summary only, marked informational so it is never double counted.
+        const problems: { ref: string; reason: string }[] = [];
+
+        for (const claim of application.variationsClaimed) {
           const variation = project.variations.find(
             (candidate) => candidate.ref === claim.variationRef,
           );
-          if (!variation) return [`${claim.variationRef} (not on the register)`];
-          if (variation.status === "pending")
-            return [`${variation.ref} (still pending)`];
-          if (variation.status === "rejected")
-            return [`${variation.ref} (rejected)`];
-          if (!variation.signedBy || !variation.signedDate)
-            return [`${variation.ref} (approved but unsigned)`];
-          return [];
-        });
+          if (!variation) {
+            problems.push({ ref: claim.variationRef, reason: "not on the register" });
+          } else if (variation.status === "pending") {
+            problems.push({ ref: variation.ref, reason: "still pending" });
+          } else if (variation.status === "rejected") {
+            problems.push({ ref: variation.ref, reason: "rejected" });
+          } else if (!variation.signedBy || !variation.signedDate) {
+            problems.push({ ref: variation.ref, reason: "approved but unsigned" });
+          }
+        }
 
+        const problemRefs = new Set(problems.map((problem) => problem.ref));
         const signedRefs = application.variationsClaimed
           .map((claim) => claim.variationRef)
-          .filter((ref) => !problems.some((problem) => problem.startsWith(ref)));
-
-        if (problems.length === 0) {
-          results.push({
-            id: "evidence:signed-variations",
-            title: "Signed variations only",
-            category: "evidence",
-            status: "pass",
-            message: `All ${application.variationsClaimed.length} claimed variations have a signed instruction on file.`,
-            expected: "Signed instruction for every claimed variation",
-            actual: "All claimed variations signed",
-            sourceDocIds: project.evidenceDocs
-              .filter(
-                (doc) =>
-                  doc.kind === "variation" &&
-                  doc.linkedRefs.some((ref) =>
-                    application.variationsClaimed.some((claim) => claim.variationRef === ref),
-                  ),
-              )
-              .map((doc) => doc.id),
-          });
-          break;
-        }
+          .filter((ref) => !problemRefs.has(ref));
 
         results.push({
           id: "evidence:signed-variations",
           title: "Signed variations only",
           category: "evidence",
-          status: "fail",
-          message: `The client rule is signed variations only: ${problems.join(", ")}. ${signedRefs.length > 0 ? `${signedRefs.join(", ")} are properly signed.` : ""}`.trim(),
+          status: problems.length === 0 ? "pass" : "warning",
+          informational: true,
+          message:
+            problems.length === 0
+              ? `Client rule — signed variations only. All ${application.variationsClaimed.length} claimed variations have a signed instruction on file.`
+              : `Client rule — signed variations only. ${problems
+                  .map((problem) => `${problem.ref} (${problem.reason})`)
+                  .join(", ")}.${signedRefs.length > 0 ? ` Properly signed: ${signedRefs.join(", ")}.` : ""} Each variation is checked individually above.`,
           expected: "Signed instruction for every claimed variation",
-          actual: problems.join("; "),
+          actual:
+            problems.length > 0
+              ? problems.map((problem) => problem.ref).join(", ")
+              : "All claimed variations signed",
           sourceDocIds: application.variationsClaimed.map((claim) => {
             const variation = project.variations.find(
               (candidate) => candidate.ref === claim.variationRef,

@@ -45,6 +45,23 @@ describe("variationsClaimable", () => {
     expect(result.message).toContain("does not exist on the variation register");
   });
 
+  it("fails a claim above the variation value", () => {
+    const project = JSON.parse(JSON.stringify(sampleProject));
+    project.currentApplication.variationsClaimed =
+      project.currentApplication.variationsClaimed.map(
+        (claim: { variationRef: string; claimedPence: number }) =>
+          claim.variationRef === "V01"
+            ? { ...claim, claimedPence: 500_000 }
+            : claim,
+      );
+
+    const result = byRef(project, "V01");
+    expect(result.status).toBe("fail");
+    expect(result.expected).toBe("No more than £4,500.00");
+    expect(result.actual).toBe("£5,000.00 claimed");
+    expect(result.message).toContain("£500.00 more than the variation allows");
+  });
+
   it("passes every claim on the clean fixture", () => {
     expect(
       variationsClaimable(cleanProject).every((result) => result.status === "pass"),

@@ -3,8 +3,8 @@ import { formatDate } from "@/lib/dates";
 import type { CheckResult, Project } from "../types";
 
 /**
- * Rule 7: a claimed variation must exist, be approved, and (per the client's
- * signed-variations rule) carry a signature.
+ * Rule 7: a claimed variation must exist, be approved, not be over-claimed, and
+ * (per the client's signed-variations rule) carry a signature.
  */
 export function variationsClaimable(project: Project): CheckResult[] {
   const application = project.currentApplication;
@@ -33,6 +33,16 @@ export function variationsClaimable(project: Project): CheckResult[] {
       };
     }
 
+    if (claim.claimedPence > variation.valuePence) {
+      return {
+        ...base,
+        status: "fail" as const,
+        message: `${variation.ref} is claimed at ${formatGBP(claim.claimedPence)} but is only valued at ${formatGBP(variation.valuePence)} — ${formatGBP(claim.claimedPence - variation.valuePence)} more than the variation allows.`,
+        expected: `No more than ${formatGBP(variation.valuePence)}`,
+        actual: `${formatGBP(claim.claimedPence)} claimed`,
+      };
+    }
+
     if (variation.status !== "approved") {
       return {
         ...base,
@@ -47,7 +57,7 @@ export function variationsClaimable(project: Project): CheckResult[] {
       return {
         ...base,
         status: "fail" as const,
-        message: `${variation.ref} (${formatGBP(variation.valuePence)}) is approved but has no signed instruction on file. ${project.subcontract.mainContractor} only accepts signed variations.`,
+        message: `${variation.ref} (${formatGBP(variation.valuePence)}) is approved but has no signed instruction on file. ${project.subcontract.mainContractor}'s client rule is signed variations only.`,
         expected: "Approved and signed",
         actual: "Approved, not signed",
       };

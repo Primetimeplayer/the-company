@@ -20,6 +20,26 @@ describe("complianceValidity", () => {
     expect(result.message).toContain("10 days before the application was submitted");
   });
 
+  it("reports RAMS as missing when nothing is on file", () => {
+    const result = byType(sampleProject, "rams");
+    expect(result.status).toBe("missing");
+    expect(result.actual).toBe("Not on file");
+    expect(result.message).toContain("RAMS pack");
+    expect(result.sourceDocIds.length).toBeGreaterThan(0);
+  });
+
+  it("checks every required compliance type", () => {
+    const results = complianceValidity(sampleProject);
+    expect(results).toHaveLength(5);
+    expect(results.map((result) => result.id)).toEqual([
+      "compliance:public_liability",
+      "compliance:employers_liability",
+      "compliance:cscs",
+      "compliance:rams",
+      "compliance:cis_verification",
+    ]);
+  });
+
   it("passes valid employers' liability and CIS verification", () => {
     expect(byType(sampleProject, "employers_liability").status).toBe("pass");
     expect(byType(sampleProject, "cis_verification").status).toBe("pass");
@@ -50,8 +70,8 @@ describe("complianceValidity", () => {
   });
 
   it("passes every document on the clean fixture", () => {
-    expect(
-      complianceValidity(cleanProject).every((result) => result.status === "pass"),
-    ).toBe(true);
+    const results = complianceValidity(cleanProject);
+    expect(results).toHaveLength(5);
+    expect(results.every((result) => result.status === "pass")).toBe(true);
   });
 });

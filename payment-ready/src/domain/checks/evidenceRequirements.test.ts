@@ -3,6 +3,10 @@ import { cleanProject } from "@/fixtures/clean-project";
 import { sampleProject } from "@/fixtures/sample-project";
 import { evidenceRequirements } from "./evidenceRequirements";
 
+function clone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
 function byId(project: typeof sampleProject, id: string) {
   const result = evidenceRequirements(project).find(
     (candidate) => candidate.id === id,
@@ -31,11 +35,45 @@ describe("evidenceRequirements", () => {
     expect(ids).not.toContain("evidence:photos:L6");
   });
 
-  it("catches unsigned variations under the signed-variations rule", () => {
+  it("summarises the signed-variations client rule without failing it", () => {
     const result = byId(sampleProject, "evidence:signed-variations");
-    expect(result.status).toBe("fail");
-    expect(result.actual).toContain("V03 (approved but unsigned)");
-    expect(result.actual).toContain("V04 (still pending)");
+    expect(result.status).toBe("warning");
+    expect(result.informational).toBe(true);
+    expect(result.actual).toBe("V03, V04");
+    expect(result.message).toContain("V03 (approved but unsigned)");
+    expect(result.message).toContain("V04 (still pending)");
+  });
+
+  it("matches variation refs exactly rather than by prefix", () => {
+    const project = clone(sampleProject);
+    project.variations.push(
+      {
+        id: "var-1",
+        ref: "V1",
+        description: "Prefix-collision variation",
+        valuePence: 100_000,
+        status: "approved",
+        sourceDocId: "ev-v01",
+      },
+      {
+        id: "var-10",
+        ref: "V10",
+        description: "Signed variation with a longer ref",
+        valuePence: 100_000,
+        status: "approved",
+        signedBy: "J. Whitmore (Northgate Build Ltd)",
+        signedDate: "2026-01-10",
+        sourceDocId: "ev-v02",
+      },
+    );
+    project.currentApplication.variationsClaimed.push(
+      { variationRef: "V1", claimedPence: 100_000 },
+      { variationRef: "V10", claimedPence: 100_000 },
+    );
+
+    const result = byId(project, "evidence:signed-variations");
+    expect(result.message).toContain("V1 (approved but unsigned)");
+    expect(result.message).toContain("Properly signed: V01, V02, V10");
   });
 
   it("passes delivery notes for material line items", () => {
@@ -45,9 +83,9 @@ describe("evidenceRequirements", () => {
   });
 
   it("flags a missing delivery note", () => {
-    const project = JSON.parse(JSON.stringify(sampleProject));
+    const project = clone(sampleProject);
     project.evidenceDocs = project.evidenceDocs.filter(
-      (doc: { id: string }) => doc.id !== "ev-dn-2",
+      (doc) => doc.id !== "ev-dn-2",
     );
 
     const result = byId(project, "evidence:delivery-notes");
