@@ -6,8 +6,8 @@ reconciles the valuation arithmetic, checks variations and compliance documents,
 flags missing evidence and works out the contractual payment timetable.
 
 Everything in the app is driven by **one typed sample fixture**. There is no
-database, no auth, no AI calls and no payments. All figures, parties and documents
-are fictional.
+database, no AI calls and no payments. All figures, parties and documents are
+fictional.
 
 > Payment Ready is a checking aid. It does not guarantee payment or provide legal
 > advice. Sample data shown.
@@ -23,6 +23,22 @@ npm run build   # production build + type check
 ```
 
 Requires Node 18.17+ (built and tested on Node 20 and 26).
+
+## Password protection
+
+`src/middleware.ts` gates the whole demo behind HTTP Basic Auth when both
+`DEMO_USER` and `DEMO_PASSWORD` are set:
+
+```bash
+DEMO_USER=demo DEMO_PASSWORD='something-long' npm run build && npm start
+```
+
+In a deployment (Vercel, Railway, etc.) add them as environment variables. If
+either is unset — the normal local-dev case — every request is allowed through.
+Next's build output, the favicon and static assets are excluded from the matcher,
+so `/_next/static/…`, `/_next/image`, `/favicon.ico` and any request with a file
+extension are served without a challenge. Browsers will prompt for the password
+and cache it for the session.
 
 ## What's in the demo
 
@@ -123,18 +139,22 @@ dates may move.
 
 ## Tests
 
-`npm test` runs **98 tests** across 19 files, covering:
+`npm test` runs **108 tests** across 22 files, covering:
 
 - each rule and every planted error
 - the clean fixture passing all 25 scored checks
 - date clamping (day 31 in February never rolls into March)
 - corrected retention / amount due arithmetic and the retention cap
 - fixture consistency (previous applications paid = certified − retention)
-- report sorting/filtering, the deterministic summary wording, the dashboard empty
-  state and the landing-page mobile menu
+- report sorting/filtering, the deterministic summary wording, the sidebar counts,
+  the dashboard empty state and the landing-page mobile menu
+- the walkthrough CTAs pointing at the booking URL and opening in a new tab
+- the Basic Auth middleware: pass-through when unconfigured, 401 challenge, wrong
+  or malformed credentials, and the static-asset exclusions
 
 ## Scope notes
 
-Deliberately **not** included: login, database, Stripe, real document extraction,
-portal integrations. The upload dropzone is visual only — selected files are listed
+Deliberately **not** included: accounts or per-user login, database, Stripe, real
+document extraction, portal integrations. The optional HTTP Basic Auth gate above
+is the only access control. The upload dropzone is visual only — selected files are listed
 but never sent anywhere.

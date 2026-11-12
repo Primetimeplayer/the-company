@@ -118,7 +118,13 @@ export default function LandingPage() {
                 variant="outline"
                 className="w-full sm:w-auto"
               >
-                <a href={WALKTHROUGH_URL}>Book a walkthrough</a>
+                <a
+                  href={WALKTHROUGH_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Book a walkthrough
+                </a>
               </Button>
             </div>
 
@@ -183,7 +189,11 @@ export default function LandingPage() {
               </p>
             </div>
             <Button asChild variant="outline" className="shrink-0">
-              <a href={WALKTHROUGH_URL}>
+              <a
+                href={WALKTHROUGH_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Book a walkthrough
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </a>

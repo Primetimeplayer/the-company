@@ -7,7 +7,10 @@ describe("WALKTHROUGH_URL", () => {
     expect(() => new URL(WALKTHROUGH_URL)).not.toThrow();
   });
 
-  it("carries a walkthrough subject when it is an email link", () => {
-    expect(decodeURIComponent(WALKTHROUGH_URL)).toContain("walkthrough");
+  it("points at the real booking page", () => {
+    expect(WALKTHROUGH_URL).toBe(
+      "https://calendly.com/primetimeplayer45/payment-ready-walkthrough",
+    );
+    expect(WALKTHROUGH_URL).not.toContain("example.com");
   });
 });
