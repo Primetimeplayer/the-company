@@ -1,0 +1,57 @@
+import { describe, expect, it } from "vitest";
+import { cleanProject } from "@/fixtures/clean-project";
+import { sampleProject } from "@/fixtures/sample-project";
+import { complianceValidity } from "./complianceValidity";
+
+function byType(project: typeof sampleProject, type: string) {
+  const result = complianceValidity(project).find(
+    (candidate) => candidate.id === `compliance:${type}`,
+  );
+  if (!result) throw new Error(`No result for ${type}`);
+  return result;
+}
+
+describe("complianceValidity", () => {
+  it("catches public liability expiring 10 days before submission", () => {
+    const result = byType(sampleProject, "public_liability");
+    expect(result.status).toBe("fail");
+    expect(result.expected).toBe("Valid on 02/02/2026");
+    expect(result.actual).toBe("Expired 23/01/2026");
+    expect(result.message).toContain("10 days before the application was submitted");
+  });
+
+  it("passes valid employers' liability and CIS verification", () => {
+    expect(byType(sampleProject, "employers_liability").status).toBe("pass");
+    expect(byType(sampleProject, "cis_verification").status).toBe("pass");
+  });
+
+  it("warns when a document expires within 30 days of submission", () => {
+    const project = JSON.parse(JSON.stringify(sampleProject));
+    const doc = project.complianceDocs.find(
+      (candidate: { type: string }) => candidate.type === "employers_liability",
+    );
+    if (!doc) throw new Error("missing doc");
+    doc.expiryDate = "2026-02-20";
+
+    const result = byType(project, "employers_liability");
+    expect(result.status).toBe("warning");
+    expect(result.message).toContain("18 days after submission");
+  });
+
+  it("warns when no expiry date is recorded", () => {
+    const project = JSON.parse(JSON.stringify(sampleProject));
+    const doc = project.complianceDocs.find(
+      (candidate: { type: string }) => candidate.type === "cscs",
+    );
+    if (!doc) throw new Error("missing doc");
+    delete doc.expiryDate;
+
+    expect(byType(project, "cscs").status).toBe("warning");
+  });
+
+  it("passes every document on the clean fixture", () => {
+    expect(
+      complianceValidity(cleanProject).every((result) => result.status === "pass"),
+    ).toBe(true);
+  });
+});
