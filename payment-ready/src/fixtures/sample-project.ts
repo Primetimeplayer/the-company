@@ -15,7 +15,6 @@ export const sampleProject: Project = {
     subcontractor: "Brightline Electrical Ltd (sample)",
     originalValuePence: 10_000_000,
     retentionPercent: 5,
-    retentionCapPercent: 5,
     paymentTerms: {
       applicationDayOfMonth: 25,
       dueDateDaysAfterApplication: 7,
@@ -82,7 +81,7 @@ export const sampleProject: Project = {
       cumulativeGrossPence: 4_900_000,
       certifiedPence: 4_850_000,
       retentionHeldPence: 245_000,
-      paidPence: 4_485_000,
+      paidPence: 4_605_000,
       paidDate: "2025-12-12",
     },
     {
@@ -91,7 +90,7 @@ export const sampleProject: Project = {
       cumulativeGrossPence: 7_450_000,
       certifiedPence: 7_420_000,
       retentionHeldPence: 372_500,
-      paidPence: 6_682_500,
+      paidPence: 7_047_500,
       paidDate: "2026-01-16",
     },
   ],

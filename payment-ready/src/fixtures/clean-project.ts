@@ -44,12 +44,29 @@ function buildCleanProject(): Project {
     return variation;
   });
 
-  project.complianceDocs = project.complianceDocs.map((doc) =>
-    doc.type === "public_liability" ? { ...doc, expiryDate: "2027-01-22" } : doc,
-  );
+  project.complianceDocs = [
+    ...project.complianceDocs.map((doc) =>
+      doc.type === "public_liability"
+        ? { ...doc, expiryDate: "2027-01-22" }
+        : doc,
+    ),
+    {
+      id: "comp-rams",
+      type: "rams",
+      holder: "Brightline Electrical Ltd (sample)",
+      expiryDate: "2026-12-31",
+      sourceDocId: "ev-rams",
+    },
+  ];
 
   project.evidenceDocs = [
     ...project.evidenceDocs,
+    {
+      id: "ev-rams",
+      fileName: "RAMS_BlockB_Electrical.pdf",
+      kind: "insurance",
+      linkedRefs: ["RAMS-2026"],
+    },
     {
       id: "ev-photo-l5",
       fileName: "Photo_L5_fire_alarm.jpg",
