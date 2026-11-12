@@ -98,7 +98,7 @@ export const sampleProject: Project = {
   currentApplication: {
     number: 4,
     periodEnd: "2026-01-24",
-    submissionDate: "2026-02-02",
+    submissionDate: "2026-01-27",
     lineItems: [
       {
         ref: "L1",
@@ -161,7 +161,7 @@ export const sampleProject: Project = {
       id: "comp-pl",
       type: "public_liability",
       holder: "Brightline Electrical Ltd (sample)",
-      expiryDate: "2026-01-23",
+      expiryDate: "2026-01-17",
       sourceDocId: "ev-pl",
     },
     {

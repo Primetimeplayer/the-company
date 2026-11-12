@@ -61,13 +61,13 @@ describe("keyDates", () => {
   it("warns when the application went in late", () => {
     const { results, keyDates: dates } = keyDates(sampleProject);
     expect(dates.submissionIsLate).toBe(true);
-    expect(dates.daysLate).toBe(8);
+    expect(dates.daysLate).toBe(2);
     // referenceDate 28/01/2026 → contractual due date 01/02/2026.
     expect(dates.daysUntilDueDate).toBe(4);
 
     const late = results.find((item) => item.id === "key-dates:late");
     expect(late?.status).toBe("warning");
-    expect(late?.actual).toBe("02/02/2026 (8 days late)");
+    expect(late?.actual).toBe("27/01/2026 (2 days late)");
     expect(late?.message).toContain("may move these dates");
   });
 

@@ -80,11 +80,11 @@ payment-ready/
 | 4 | `currentApplication.previouslyCertifiedPence` | Stated £76,000.00; application #3 was certified at £74,200.00. |
 | 5 | Variation `V03` | Approved but never signed, claimed anyway. |
 | 6 | Variation `V04` | Still pending, claimed anyway. |
-| 7 | `complianceDocs` public liability | Expired 23/01/2026 — 10 days before the 02/02/2026 submission. |
+| 7 | `complianceDocs` public liability | Expired 17/01/2026 — 10 days before the 27/01/2026 submission. |
 | 8 | `complianceDocs` | No RAMS pack on file (all five compliance types are required). |
 | 9 | Evidence `L5` | Fire alarm first fix is 55% complete but has no photo, against Northgate's photo rule. |
 | 10 | `currentApplication.amountDuePence` | Arithmetically consistent with the stated figures (£1,600.00) but the corrected figures give £3,082.50 — reported as a warning. |
-| 11 | Submission date | Sent 02/02/2026, 8 days after the contractual 25/01/2026 application date (warning). |
+| 11 | Submission date | Sent 27/01/2026, 2 days after the contractual 25/01/2026 application date (warning). |
 
 `clean-project.ts` fixes all of the above (including adding the RAMS pack and signing
 V03/V04) so the test suite can prove every scored check reaches a pass.

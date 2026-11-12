@@ -15,8 +15,8 @@ describe("complianceValidity", () => {
   it("catches public liability expiring 10 days before submission", () => {
     const result = byType(sampleProject, "public_liability");
     expect(result.status).toBe("fail");
-    expect(result.expected).toBe("Valid on 02/02/2026");
-    expect(result.actual).toBe("Expired 23/01/2026");
+    expect(result.expected).toBe("Valid on 27/01/2026");
+    expect(result.actual).toBe("Expired 17/01/2026");
     expect(result.message).toContain("10 days before the application was submitted");
   });
 
@@ -55,7 +55,7 @@ describe("complianceValidity", () => {
 
     const result = byType(project, "employers_liability");
     expect(result.status).toBe("warning");
-    expect(result.message).toContain("18 days after submission");
+    expect(result.message).toContain("24 days after submission");
   });
 
   it("warns when no expiry date is recorded", () => {
