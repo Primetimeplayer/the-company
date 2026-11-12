@@ -23,7 +23,11 @@ export {
   variationsClaimable,
 };
 
-/** Run every rule and score the application. Pure and deterministic. */
+/**
+ * Run every rule and score the application. Pure and deterministic.
+ * Informational rows (reference figures and the timetable) are reported but do
+ * not count towards the score.
+ */
 export function runAllChecks(project: Project): ProjectCheckRun {
   const dates = keyDates(project);
 
@@ -40,11 +44,13 @@ export function runAllChecks(project: Project): ProjectCheckRun {
     ...dates.results,
   ];
 
+  const scored = results.filter((result) => !result.informational);
+
   return {
     results,
     score: {
-      passed: results.filter((result) => result.status === "pass").length,
-      total: results.length,
+      passed: scored.filter((result) => result.status === "pass").length,
+      total: scored.length,
     },
     keyDates: dates.keyDates,
   };

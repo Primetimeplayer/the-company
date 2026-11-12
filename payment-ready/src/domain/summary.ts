@@ -20,12 +20,19 @@ function actionFor(result: CheckResult): Action | undefined {
   }
   if (result.id.startsWith("variation-claim:")) {
     const ref = result.id.split(":")[1] ?? "the variation";
-    return { weight: 2, action: `get ${ref} signed` };
+    // "Approved, not signed" means the instruction is missing; anything else
+    // (pending, rejected, missing) means the variation itself is not approved.
+    const action =
+      result.actual === "Approved, not signed"
+        ? `get ${ref} signed`
+        : `get ${ref} approved`;
+    return { weight: 2, action };
   }
   if (result.id.startsWith("compliance:")) {
+    const verb = result.status === "missing" ? "upload" : "renew";
     return {
       weight: 3,
-      action: `renew the ${result.title.toLowerCase()}`,
+      action: `${verb} the ${result.title.toLowerCase()}`,
     };
   }
   if (result.id === "cumulative-total") {
@@ -59,20 +66,22 @@ function capitalise(text: string): string {
 }
 
 /**
- * Build the summary card text from the check results. The wording is fixed
- * per check id so it is fully deterministic.
+ * Build the summary card text from the check results. Informational rows are
+ * ignored, so reference figures never inflate the counts. The wording is fixed
+ * per check id and is fully deterministic.
  */
 export function buildSummary(results: CheckResult[]): CheckSummary {
-  const failed = results.filter((result) => result.status === "fail");
-  const missing = results.filter((result) => result.status === "missing");
-  const warnings = results.filter((result) => result.status === "warning");
-  const passed = results.filter((result) => result.status === "pass");
+  const relevant = results.filter((result) => !result.informational);
+  const failed = relevant.filter((result) => result.status === "fail");
+  const missing = relevant.filter((result) => result.status === "missing");
+  const warnings = relevant.filter((result) => result.status === "warning");
+  const passed = relevant.filter((result) => result.status === "pass");
   const issues = failed.length;
 
   if (issues === 0 && missing.length === 0) {
     if (warnings.length === 0) {
       return {
-        headline: `Ready to submit — all ${results.length} checks passed.`,
+        headline: `Ready to submit — all ${relevant.length} checks passed.`,
         detail: `Every figure reconciles and all required evidence is on file. Submit on the client template and diarise the payment notice date.`,
         issues,
         missing: missing.length,
@@ -81,7 +90,7 @@ export function buildSummary(results: CheckResult[]): CheckSummary {
     }
     return {
       headline: `No blocking issues — ${warnings.length} warning${warnings.length === 1 ? "" : "s"} to review.`,
-      detail: `${passed.length} of ${results.length} checks passed. Read the warnings below before the application goes out.`,
+      detail: `${passed.length} of ${relevant.length} checks passed. Read the warnings below before the application goes out.`,
       issues,
       missing: missing.length,
       warnings: warnings.length,

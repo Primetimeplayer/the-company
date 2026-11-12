@@ -23,6 +23,7 @@ export function revisedContractValue(project: Project): CheckResult[] {
       title: "Revised contract value",
       category: "money",
       status: "pass",
+      informational: true,
       message: `Revised contract value is ${formatGBP(revisedPence)}: ${formatGBP(project.subcontract.originalValuePence)} original value plus ${formatGBP(approvedTotalPence)} across ${approved.length} approved variation${approved.length === 1 ? "" : "s"}.${excludedNote}`,
       expected: formatGBP(revisedPence),
       actual: `${formatGBP(project.subcontract.originalValuePence)} + ${formatGBP(approvedTotalPence)} approved variations`,

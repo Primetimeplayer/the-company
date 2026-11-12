@@ -148,6 +148,8 @@ export interface CheckResult {
   expected?: string;
   actual?: string;
   sourceDocIds: string[];
+  /** Reference output only — shown in the report but excluded from the score. */
+  informational?: boolean;
 }
 
 export interface CheckScore {
