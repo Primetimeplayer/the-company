@@ -41,7 +41,7 @@ export interface Counts {
   missing: number;
 }
 
-export function AppSidebar({ counts }: { counts: Counts }) {
+export function AppSidebar({ counts }: { counts: Counts | null }) {
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border bg-white lg:flex">
       <div className="px-5 py-5">
@@ -95,7 +95,9 @@ export function AppSidebar({ counts }: { counts: Counts }) {
                 <StatusDot status={status} />
                 {label}
               </span>
-              <span className="tabular-nums text-slate-400">{counts[countKey]}</span>
+              <span className="tabular-nums text-slate-400">
+                {counts ? counts[countKey] : "—"}
+              </span>
             </li>
           ))}
         </ul>
@@ -111,7 +113,7 @@ export function AppSidebar({ counts }: { counts: Counts }) {
   );
 }
 
-export function MobileNav({ counts }: { counts: Counts }) {
+export function MobileNav({ counts }: { counts: Counts | null }) {
   return (
     <div className="border-b border-border bg-white lg:hidden">
       <div className="flex items-center justify-between px-4 py-3">
@@ -145,7 +147,7 @@ export function MobileNav({ counts }: { counts: Counts }) {
         {STATUS_ITEMS.map(({ status, label, countKey }) => (
           <span key={label} className="inline-flex items-center gap-1.5">
             <StatusDot status={status} />
-            {counts[countKey]}
+            {counts ? counts[countKey] : "—"}
             <span className="sr-only">{label}</span>
           </span>
         ))}

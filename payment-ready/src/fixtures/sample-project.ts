@@ -6,7 +6,7 @@ import type { Project } from "@/domain/types";
  */
 export const sampleProject: Project = {
   sampleLabel: "SAMPLE DATA",
-  referenceDate: "2026-02-05",
+  referenceDate: "2026-01-28",
   subcontract: {
     id: "sub-rsa-b-elec",
     projectName: "Riverside Apartments – Block B, Electrical Fit-out",

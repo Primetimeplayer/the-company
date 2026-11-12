@@ -27,6 +27,7 @@ export function variationsClaimable(project: Project): CheckResult[] {
       return {
         ...base,
         status: "fail" as const,
+        reason: "unregistered" as const,
         message: `${claim.variationRef} is claimed at ${formatGBP(claim.claimedPence)} but does not exist on the variation register.`,
         expected: "A registered, approved variation",
         actual: "No matching variation",
@@ -37,6 +38,7 @@ export function variationsClaimable(project: Project): CheckResult[] {
       return {
         ...base,
         status: "fail" as const,
+        reason: "overclaimed" as const,
         message: `${variation.ref} is claimed at ${formatGBP(claim.claimedPence)} but is only valued at ${formatGBP(variation.valuePence)} — ${formatGBP(claim.claimedPence - variation.valuePence)} more than the variation allows.`,
         expected: `No more than ${formatGBP(variation.valuePence)}`,
         actual: `${formatGBP(claim.claimedPence)} claimed`,
@@ -47,6 +49,7 @@ export function variationsClaimable(project: Project): CheckResult[] {
       return {
         ...base,
         status: "fail" as const,
+        reason: "not_approved" as const,
         message: `${variation.ref} is claimed at ${formatGBP(claim.claimedPence)} but is still ${variation.status}. Only approved variations can be included.`,
         expected: "Approved variation",
         actual: `${variation.status.charAt(0).toUpperCase()}${variation.status.slice(1)}`,
@@ -57,6 +60,7 @@ export function variationsClaimable(project: Project): CheckResult[] {
       return {
         ...base,
         status: "fail" as const,
+        reason: "unsigned" as const,
         message: `${variation.ref} (${formatGBP(variation.valuePence)}) is approved but has no signed instruction on file. ${project.subcontract.mainContractor}'s client rule is signed variations only.`,
         expected: "Approved and signed",
         actual: "Approved, not signed",

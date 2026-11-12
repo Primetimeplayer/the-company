@@ -139,6 +139,12 @@ export type CheckCategory =
 
 export type CheckStatus = "pass" | "fail" | "missing" | "warning";
 
+export type VariationClaimReason =
+  | "overclaimed"
+  | "not_approved"
+  | "unsigned"
+  | "unregistered";
+
 export interface CheckResult {
   id: string;
   title: string;
@@ -150,6 +156,8 @@ export interface CheckResult {
   sourceDocIds: string[];
   /** Reference output only — shown in the report but excluded from the score. */
   informational?: boolean;
+  /** Machine-readable cause for variation-claim failures. */
+  reason?: VariationClaimReason;
 }
 
 export interface CheckScore {

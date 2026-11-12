@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { useState } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { DashboardView, type DashboardViewProps } from "./dashboard-view";
@@ -8,7 +9,7 @@ import { sampleProject } from "@/fixtures/sample-project";
 
 afterEach(cleanup);
 
-function buildProps(): DashboardViewProps {
+function buildProps(): Omit<DashboardViewProps, "loaded" | "onSampleLoaded"> {
   const run = runAllChecks(sampleProject);
   const counts = {
     pass: run.results.filter((result) => result.status === "pass").length,
@@ -32,9 +33,20 @@ function buildProps(): DashboardViewProps {
   };
 }
 
+function Harness() {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <DashboardView
+      {...buildProps()}
+      loaded={loaded}
+      onSampleLoaded={() => setLoaded(true)}
+    />
+  );
+}
+
 describe("DashboardView", () => {
   it("hides the report and shows an empty state until the sample is loaded", () => {
-    render(<DashboardView {...buildProps()} />);
+    render(<Harness />);
 
     expect(screen.getByText("No application loaded yet")).toBeTruthy();
     expect(screen.queryByText("Readiness report")).toBeNull();
@@ -44,7 +56,7 @@ describe("DashboardView", () => {
   });
 
   it("reveals the stats, summary, report and key dates after loading", () => {
-    render(<DashboardView {...buildProps()} />);
+    render(<Harness />);
 
     fireEvent.click(screen.getAllByText("Load sample project")[0] as HTMLElement);
 

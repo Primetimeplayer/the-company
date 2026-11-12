@@ -29,6 +29,19 @@ describe("buildSummary", () => {
     expect(summary.headline).toBe("1 issue and 0 missing items.");
   });
 
+  it("asks for an over-claimed variation to be reduced", () => {
+    const summary = buildSummary([
+      {
+        ...result("variation-claim:V01", "fail", "£9,000.00 claimed"),
+        reason: "overclaimed",
+      },
+    ]);
+
+    // The action is capitalised at the start of the sentence.
+    expect(summary.detail.toLowerCase()).toContain("reduce the v01 claim");
+    expect(summary.detail).not.toContain("get V01 approved");
+  });
+
   it("asks for an approved but unsigned variation to be signed", () => {
     const summary = buildSummary([
       result("variation-claim:V03", "fail", "Approved, not signed"),

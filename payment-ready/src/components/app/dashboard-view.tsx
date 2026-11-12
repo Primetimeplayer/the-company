@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { FileSearch } from "lucide-react";
 import { KeyDatesPanel } from "./key-dates-panel";
 import { ReadinessReport } from "./readiness-report";
@@ -30,15 +29,20 @@ export interface DashboardViewProps {
   keyDates: KeyDates;
   paymentTerms: PaymentTerms;
   submissionDate: string;
+  /** Controlled by DashboardShell so the sidebar can hide its counts. */
+  loaded?: boolean;
+  onSampleLoaded?: () => void;
 }
 
-export function DashboardView(props: DashboardViewProps) {
-  const [loaded, setLoaded] = useState(false);
-
+export function DashboardView({
+  loaded = false,
+  onSampleLoaded,
+  ...props
+}: DashboardViewProps) {
   return (
     <>
       <div className="mt-5">
-        <UploadDropzone onSampleLoaded={() => setLoaded(true)} />
+        <UploadDropzone onSampleLoaded={onSampleLoaded} />
       </div>
 
       {loaded ? (
@@ -86,7 +90,7 @@ export function DashboardView(props: DashboardViewProps) {
               type="button"
               size="sm"
               className="mt-5"
-              onClick={() => setLoaded(true)}
+              onClick={onSampleLoaded}
             >
               Load sample project
             </Button>

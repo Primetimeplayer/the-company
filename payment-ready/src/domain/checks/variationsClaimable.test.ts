@@ -62,6 +62,28 @@ describe("variationsClaimable", () => {
     expect(result.message).toContain("£500.00 more than the variation allows");
   });
 
+  it("tags each failure with a machine-readable reason", () => {
+    const overClaimed = JSON.parse(JSON.stringify(sampleProject));
+    overClaimed.currentApplication.variationsClaimed =
+      overClaimed.currentApplication.variationsClaimed.map(
+        (claim: { variationRef: string; claimedPence: number }) =>
+          claim.variationRef === "V01"
+            ? { ...claim, claimedPence: 900_000 }
+            : claim,
+      );
+    expect(byRef(overClaimed, "V01").reason).toBe("overclaimed");
+
+    expect(byRef(sampleProject, "V03").reason).toBe("unsigned");
+    expect(byRef(sampleProject, "V04").reason).toBe("not_approved");
+
+    const unregistered = JSON.parse(JSON.stringify(sampleProject));
+    unregistered.currentApplication.variationsClaimed.push({
+      variationRef: "V99",
+      claimedPence: 100_000,
+    });
+    expect(byRef(unregistered, "V99").reason).toBe("unregistered");
+  });
+
   it("passes every claim on the clean fixture", () => {
     expect(
       variationsClaimable(cleanProject).every((result) => result.status === "pass"),

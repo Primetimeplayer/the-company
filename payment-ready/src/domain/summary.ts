@@ -20,12 +20,17 @@ function actionFor(result: CheckResult): Action | undefined {
   }
   if (result.id.startsWith("variation-claim:")) {
     const ref = result.id.split(":")[1] ?? "the variation";
-    // "Approved, not signed" means the instruction is missing; anything else
-    // (pending, rejected, missing) means the variation itself is not approved.
+    // The check tags each failure with a reason; fall back to the actual text
+    // for results built before the reason field existed.
+    const unsigned =
+      result.reason === "unsigned" ||
+      (result.reason === undefined && result.actual === "Approved, not signed");
     const action =
-      result.actual === "Approved, not signed"
-        ? `get ${ref} signed`
-        : `get ${ref} approved`;
+      result.reason === "overclaimed"
+        ? `reduce the ${ref} claim to its approved value`
+        : unsigned
+          ? `get ${ref} signed`
+          : `get ${ref} approved`;
     return { weight: 2, action };
   }
   if (result.id.startsWith("compliance:")) {
